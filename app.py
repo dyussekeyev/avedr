@@ -1,8 +1,13 @@
 from flask import Flask, jsonify, request
 import requests
 import time
+import os
+import tempfile
 
 app = Flask(__name__)
+
+api_url = ""
+api_key = ""
 
 # Configuration: List of API Endpoints
 API_ENDPOINTS = [
@@ -12,33 +17,48 @@ API_ENDPOINTS = [
 @app.route('/scan', methods=['POST'])
 def scan():
     """Handles the POST request to scan using multiple endpoints."""
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    analysis_date = int(time.time())
-    analysis_results = {}
-
-    for endpoint in API_ENDPOINTS:
-        files = {'file': (file.filename, file.stream, file.content_type)}
-        response = requests.post(endpoint["url"], files=files)
-        result = response.json()
-        analysis_results[endpoint["name"]] = {
-            "category": result.get("category", "undetected"),
-            "result": result.get("result", "")
+    try:
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        headers = {
+            'accept': 'application/octet-stream',
+            'Authorization': f'Bearer {api_key}'
         }
+        response = requests.get(file_url, headers=headers, stream=True)
+        
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to download file"}), 500
+        
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                temp_file.write(chunk)
+        
+        temp_file.close()
+        file_path = temp_file.name
 
-    final_result = [
-        {
-            "analysis_date": analysis_date,
-            "analysis_results": analysis_results
-        }
-    ]
-    
-    return jsonify(final_result)
+        analysis_date = int(time.time())
+        analysis_results = {}
+
+        for endpoint in API_ENDPOINTS:
+            with open(file_path, 'rb') as f:
+                files = {'file': (os.path.basename(file_path), f, 'application/octet-stream')}
+                response = requests.post(endpoint["url"], files=files)
+                result = response.json()
+                analysis_results[endpoint["name"]] = {
+                    "category": result.get("category", "undetected"),
+                    "result": result.get("result", "")
+                }
+
+        final_result = [
+            {
+                "analysis_date": analysis_date,
+                "analysis_results": analysis_results
+            }
+        ]
+        
+        return jsonify(final_result)
+    finally:
+        os.remove(file_path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555)
