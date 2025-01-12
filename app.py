@@ -29,21 +29,19 @@ def scan():
         'accept': 'application/octet-stream',
         'Authorization': f'Bearer {config_api_key}'
     }
-    response = requests.get(f"{config_api_url}/file/{hash_value}/download", headers=headers, stream=True)
 
     mwdb = MWDB(api_url=config_api_url, api_key=config_api_key)
-    file = mwdb.query_file(sha256)
+    file = mwdb.query_file(hash_value)
 
     try:
         file_content = file.download()
-    except:
+        temp_file.write(file_content)
+        temp_file.close()
+    except Exception as e:
         return jsonify({
             "error": "Failed to download file",
-            "status_code": response.status_code,
-            "response_text": response.text
+            "message": str(e)
         }), 500
-    finally:
-        temp_file.close()
 
     analysis_date = int(time.time())
     analysis_results = {}
