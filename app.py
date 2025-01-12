@@ -33,7 +33,11 @@ def scan():
     
     if response.status_code != 200:
         os.remove(file_path)
-        return jsonify({"error": "Failed to download file", "status_code": response.status_code}), 500
+        return jsonify({
+            "error": "Failed to download file",
+            "status_code": response.status_code,
+            "response_text": response.text
+        }), 500
     
     for chunk in response.iter_content(chunk_size=8192):
         if chunk:
@@ -50,7 +54,11 @@ def scan():
             response = requests.post(endpoint["url"], files=files)
             if response.status_code != 200:
                 os.remove(file_path)
-                return jsonify({"error": f"Failed to scan file with {endpoint['name']}", "status_code": response.status_code}), 500
+                return jsonify({
+                    "error": f"Failed to scan file with {endpoint['name']}",
+                    "status_code": response.status_code,
+                    "response_text": response.text
+                }), 500
             result = response.json()
             analysis_results[endpoint["name"]] = {
                 "category": result.get("category", "undetected"),
