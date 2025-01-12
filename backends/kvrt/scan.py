@@ -19,8 +19,8 @@ def parse_output(output, filename):
     """Parses the output to find the threat for the specified file."""
     match = re.search(r'Threat <(.*?)> is detected on object </.*{}>'.format(re.escape(filename)), output)
     if match:
-        return True, match.group(1)
-    return False, ""
+        return match.group(1)
+    return ""
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -37,9 +37,9 @@ def scan():
     file.save(filepath)
 
     output = run_kvrt(SCAN_DIR)
-    threat_detected, threat_name = parse_output(output, random_filename)
+    threat_name = parse_output(output, random_filename)
     
-    category = "malicious" if threat_detected else "undetected"
+    category = "malicious" if threat_name else "undetected"
 
     response = {
         "av_product": "KVRT",
