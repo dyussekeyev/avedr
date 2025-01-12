@@ -3,7 +3,6 @@ import requests
 import time
 import os
 import tempfile
-from mwdblib import MWDB
 
 app = Flask(__name__)
 
@@ -15,33 +14,16 @@ API_ENDPOINTS = [
     {"name": "KVRT", "url": "http://kvrt:8000/scan"}
 ]
 
-@app.route('/scan', methods=['GET'])
+@app.route('/scan', methods=['POST'])
 def scan():
-    """Handles the GET request to scan using multiple endpoints."""
-    hash_value = request.args.get('hash_value')
-    
-    if not hash_value:
-        return jsonify({"error": "hash_value is required"}), 400
+    """Handles the POST request to scan using multiple endpoints."""
+    if 'file' not in request.files:
+        return jsonify({"error": "file is required"}), 400
 
+    file = request.files['file']
     temp_file = tempfile.NamedTemporaryFile(delete=False)
-
-    headers = {
-        'accept': 'application/octet-stream',
-        'Authorization': f'Bearer {config_api_key}'
-    }
-
-    mwdb = MWDB(api_url=config_api_url, api_key=config_api_key)
-    file = mwdb.query_file(hash_value)
-
-    try:
-        file_content = file.download()
-        temp_file.write(file_content)
-        temp_file.close()
-    except Exception as e:
-        return jsonify({
-            "error": "Failed to download file",
-            "message": str(e)
-        }), 500
+    file.save(temp_file.name)
+    temp_file.close()
 
     analysis_date = int(time.time())
     analysis_results = {}
