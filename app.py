@@ -6,7 +6,7 @@ import tempfile
 
 app = Flask(__name__)
 
-config_api_url = "http://127.0.0.1:5000/api"
+config_api_url = "http://host.docker.internal:5000/api"
 config_api_key = "your_api_key_here"
 
 # Configuration: List of API Endpoints
