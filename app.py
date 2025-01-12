@@ -11,7 +11,7 @@ config_api_key = "your_api_key_here"
 
 # Configuration: List of API Endpoints
 API_ENDPOINTS = [
-    {"name": "KVRT", "url": "http://127.0.0.1:8000/scan"}
+    {"name": "KVRT", "url": "http://kvrt:8000/scan"}
 ]
 
 @app.route('/scan', methods=['GET'])
