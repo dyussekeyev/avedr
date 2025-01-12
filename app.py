@@ -16,7 +16,11 @@ API_ENDPOINTS = [
 
 @app.route('/scan', methods=['GET'])
 def scan():
-    """Handles the POST request to scan using multiple endpoints."""
+    """Handles the GET request to scan using multiple endpoints."""
+    hash_value = request.args.get('hash_value')
+    
+    if not hash_value:
+        return jsonify({"error": "hash_value is required"}), 400
 
     try:
         temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -24,7 +28,7 @@ def scan():
             'accept': 'application/octet-stream',
             'Authorization': f'Bearer {config_api_key}'
         }
-        response = requests.get("$config_api_url/file/$hash_value/download", headers=headers, stream=True)
+        response = requests.get(f"{config_api_url}/file/{hash_value}/download", headers=headers, stream=True)
         
         if response.status_code != 200:
             return jsonify({"error": "Failed to download file"}), 500
