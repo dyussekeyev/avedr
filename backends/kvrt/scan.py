@@ -42,7 +42,6 @@ def scan():
     category = "malicious" if threat_name else "undetected"
 
     response = {
-        "av_product": "KVRT",
         "category": category,
         "result": threat_name
     }
