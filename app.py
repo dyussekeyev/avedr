@@ -4,7 +4,6 @@ import time
 import os
 import tempfile
 from mwdblib import MWDB
-from datetime import datetime
 
 app = Flask(__name__)
 
@@ -72,16 +71,7 @@ def scan():
     ]
     
     os.remove(temp_file.name)
-    
-    # Process final_result and call file.add_comment(comment)
-    analysis_date_str = datetime.utcfromtimestamp(analysis_date).strftime('%Y-%m-%d %H:%M:%S UTC')
-    comment_lines = [f"analysis_date: {analysis_date_str}"]
-    for endpoint, results in analysis_results.items():
-        comment_lines.append(f"{endpoint}: {results['result']}")
-    comment = "\n".join(comment_lines)
-    
-    file.add_comment(comment)
-    return jsonify({"message": "Comment added successfully"})
+    return jsonify(final_result)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555)
