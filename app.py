@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests
 import time
 
@@ -9,14 +9,22 @@ API_ENDPOINTS = [
     {"name": "KVRT", "url": "http://127.0.0.1:8000/scan"}
 ]
 
-@app.route('/scan', methods=['GET'])
+@app.route('/scan', methods=['POST'])
 def scan():
-    """Handles the GET request to scan using multiple endpoints."""
+    """Handles the POST request to scan using multiple endpoints."""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
     analysis_date = int(time.time())
     analysis_results = {}
 
     for endpoint in API_ENDPOINTS:
-        response = requests.get(endpoint["url"])
+        files = {'file': (file.filename, file.read(), file.content_type)}
+        response = requests.post(endpoint["url"], files=files)
         result = response.json()
         analysis_results[endpoint["name"]] = {
             "category": result.get("category", "undetected"),
