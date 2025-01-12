@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify
 import os
+import subprocess
+import re
+import uuid
 
 app = Flask(__name__)
 scan_dir = '/tmp/share'
 
 def run_kvrt(dirname):
     # Запускаем программу kvrt.run с указанными параметрами
-    result = subprocess.run(["./kvrt.run", "--", "-accepteula", "-silent", "-customonly", "-custom", dirname], capture_output=True, text=True)
+    result = subprocess.run(["./kvrt.run", "--allowuser", "--", "-accepteula", "-silent", "-customonly", "-custom", dirname], capture_output=True, text=True)
     return result.stdout
 
 def parse_output(output, filename):
@@ -23,13 +26,15 @@ def scan():
     file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
-    filepath = os.path.join(scan_dir, file.filename)
+
+    random_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+    filepath = os.path.join(scan_dir, random_filename)
     file.save(filepath)
 
     output = run_kvrt(scan_dir)
-    threat = parse_output(output, file.filename)
+    threat = parse_output(output, random_filename)
     
-    return jsonify({"message": "File saved successfully", "path": filepath}), 200
+    return jsonify({"message": "File saved successfully", "path": filepath, "threat": threat}), 200
 
 if __name__ == '__main__':
     if not os.path.exists(scan_dir):
