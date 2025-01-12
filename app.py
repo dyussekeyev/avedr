@@ -7,7 +7,7 @@ import tempfile
 app = Flask(__name__)
 
 config_api_url = "http://127.0.0.1:5000/api"
-config_api_key = ""
+config_api_key = "your_api_key_here"
 
 # Configuration: List of API Endpoints
 API_ENDPOINTS = [
@@ -31,7 +31,7 @@ def scan():
         response = requests.get(f"{config_api_url}/file/{hash_value}/download", headers=headers, stream=True)
         
         if response.status_code != 200:
-            return jsonify({"error": "Failed to download file"}), 500
+            return jsonify({"error": "Failed to download file", "status_code": response.status_code}), 500
         
         for chunk in response.iter_content(chunk_size=8192):
             if chunk:
@@ -61,6 +61,8 @@ def scan():
         ]
         
         return jsonify(final_result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     finally:
         os.remove(file_path)
 
