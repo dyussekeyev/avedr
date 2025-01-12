@@ -23,7 +23,7 @@ def scan():
     analysis_results = {}
 
     for endpoint in API_ENDPOINTS:
-        files = {'file': (file.filename, file.read(), file.content_type)}
+        files = {'file': (file.filename, file.stream, file.content_type)}
         response = requests.post(endpoint["url"], files=files)
         result = response.json()
         analysis_results[endpoint["name"]] = {
