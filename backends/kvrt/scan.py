@@ -5,38 +5,51 @@ import re
 import uuid
 
 app = Flask(__name__)
-scan_dir = '/tmp/share'
+SCAN_DIR = '/tmp/share'
 
-def run_kvrt(dirname):
-    # Запускаем программу kvrt.run с указанными параметрами
-    result = subprocess.run(["./kvrt.run", "--allowuser", "--", "-accepteula", "-silent", "-customonly", "-custom", dirname], capture_output=True, text=True)
+def run_kvrt(directory):
+    """Runs the kvrt.run program with specified parameters."""
+    result = subprocess.run(
+        ["./kvrt.run", "--allowuser", "--", "-accepteula", "-silent", "-customonly", "-custom", directory], 
+        capture_output=True, text=True
+    )
     return result.stdout
 
 def parse_output(output, filename):
-    # Ищем угрозу для указанного файла
+    """Parses the output to find the threat for the specified file."""
     match = re.search(r'Threat <(.*?)> is detected on object </.*{}>'.format(re.escape(filename)), output)
     if match:
-        return match.group(1)
-    return "Threat not found for specified file."
+        return True, match.group(1)
+    return False, ""
 
 @app.route('/scan', methods=['POST'])
 def scan():
+    """Handles the POST request to scan a file."""
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
     random_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-    filepath = os.path.join(scan_dir, random_filename)
+    filepath = os.path.join(SCAN_DIR, random_filename)
     file.save(filepath)
 
-    output = run_kvrt(scan_dir)
-    threat = parse_output(output, random_filename)
+    output = run_kvrt(SCAN_DIR)
+    threat_detected, threat_name = parse_output(output, random_filename)
     
-    return jsonify({"message": "File saved successfully", "path": filepath, "threat": threat}), 200
+    category = "malicious" if threat_detected else "undetected"
+
+    response = {
+        "av_product": "KVRT",
+        "category": category,
+        "result": threat_name
+    }
+    
+    return jsonify(response), 200
 
 if __name__ == '__main__':
-    if not os.path.exists(scan_dir):
-        os.makedirs(scan_dir)
+    if not os.path.exists(SCAN_DIR):
+        os.makedirs(SCAN_DIR)
     app.run(host='0.0.0.0', port=8000)
