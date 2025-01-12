@@ -6,15 +6,15 @@ import tempfile
 
 app = Flask(__name__)
 
-api_url = ""
-api_key = ""
+config_api_url = "http://127.0.0.1:5000/api"
+config_api_key = ""
 
 # Configuration: List of API Endpoints
 API_ENDPOINTS = [
     {"name": "KVRT", "url": "http://127.0.0.1:8000/scan"}
 ]
 
-@app.route('/scan', methods=['POST'])
+@app.route('/scan', methods=['GET'])
 def scan():
     """Handles the POST request to scan using multiple endpoints."""
 
@@ -22,9 +22,9 @@ def scan():
         temp_file = tempfile.NamedTemporaryFile(delete=False)
         headers = {
             'accept': 'application/octet-stream',
-            'Authorization': f'Bearer {api_key}'
+            'Authorization': f'Bearer {config_api_key}'
         }
-        response = requests.get(file_url, headers=headers, stream=True)
+        response = requests.get("$config_api_url/file/$hash_value/download", headers=headers, stream=True)
         
         if response.status_code != 200:
             return jsonify({"error": "Failed to download file"}), 500
