@@ -7,8 +7,8 @@ import tempfile
 app = Flask(__name__)
 
 API_ENDPOINTS = [
-    {"name": "KVRT", "url": "http://kvrt:8000/scan"},
-    {"name": "ClamAV", "url": "http://clamav:8001/scan"}
+    {"name": "ClamAV", "url": "http://clamav:8001/scan"},
+    {"name": "KVRT", "url": "http://kvrt:8000/scan"}
 ]
 
 @app.route('/scan', methods=['POST'])
