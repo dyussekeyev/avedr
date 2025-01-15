@@ -8,6 +8,7 @@ services:
       - "5555:5555"
     depends_on:
       - kvrt
+      - clamav
 
   kvrt:
     build:
@@ -15,3 +16,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+
+  clamav:
+    build:
+      context: ./backends/clamav
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
