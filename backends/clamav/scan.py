@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 import subprocess
+import re
 import uuid
 
 app = Flask(__name__)
@@ -16,9 +17,10 @@ def run_clamav(directory):
 
 def parse_output(output, filename):
     """Parses the output to find the threat for the specified file."""
-    if "FOUND" in output:
-        return "malicious"
-    return "undetected"
+    match = re.search(r'{}: (.*) FOUND'.format(re.escape(filename)), output)
+    if match:
+        return match.group(1)
+    return ""
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -35,11 +37,13 @@ def scan():
     file.save(filepath)
 
     output = run_clamav(SCAN_DIR)
-    category = parse_output(output, random_filename)
+    threat_name = parse_output(output, random_filename)
+    
+    category = "malicious" if threat_name else "undetected"
 
     response = {
         "category": category,
-        "result": output
+        "result": threat_name
     }
     
     return jsonify(response), 200
