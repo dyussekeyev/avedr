@@ -1,25 +1,15 @@
 version: '3'
 services:
-  app:
+  clamav:
     build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5555:5555"
-    depends_on:
-      - kvrt
-      - clamav
-
-  kvrt:
-    build:
-      context: ./backends/kvrt
+      context: ./backends/clamav
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
 
-  clamav:
+  kvrt:
     build:
-      context: ./backends/clamav
+      context: ./backends/kvrt
       dockerfile: Dockerfile
     ports:
       - "8001:8000"
