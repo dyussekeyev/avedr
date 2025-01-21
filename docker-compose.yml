@@ -6,10 +6,3 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-
-  kvrt:
-    build:
-      context: ./backends/kvrt
-      dockerfile: Dockerfile
-    ports:
-      - "8001:8000"
