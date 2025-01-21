@@ -7,13 +7,21 @@ import uuid
 app = Flask(__name__)
 SCAN_DIR = '/tmp/share'
 
-def run_clamav(directory):
+def run_av(directory):
     """Runs the clamdscan program with specified parameters."""
     result = subprocess.run(
         ["clamdscan", directory], 
         capture_output=True, text=True
     )
     return result.stdout
+
+def get_version():
+    """Gets the ClamAV version and signature database information."""
+    result = subprocess.run(
+        ["clamdscan", "--version"], 
+        capture_output=True, text=True
+    )
+    return result.stdout.strip()
 
 def parse_output(output, filename):
     """Parses the output to find the threat for the specified file."""
@@ -38,11 +46,13 @@ def scan():
     filepath = os.path.join(SCAN_DIR, random_filename)
     file.save(filepath)
 
-    output = run_clamav(SCAN_DIR)
-    threat_name = parse_output(output, random_filename)
+    output = run_av(SCAN_DIR)
+    result = parse_output(output, random_filename)
+    version = get_version()
 
     response = {
-        "result": threat_name
+        "result": result,
+        "version": version
     }
 
     os.remove(filepath)
