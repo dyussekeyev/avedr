@@ -18,4 +18,4 @@ RUN echo "0 0 * * * /app/update_av.sh" >> /etc/crontab
 RUN echo "*/5 * * * * /app/check_av.sh" >> /etc/crontab
 
 # Ensure cron is started
-CMD ["sh", "-c", "service clamav-daemon restart && cron && venv/bin/python /app/scan.py"]
+CMD ["sh", "-c", "service clamav-daemon restart && cron && /app/venv/bin/python /app/scan.py"]
