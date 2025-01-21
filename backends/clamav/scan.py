@@ -45,7 +45,9 @@ def scan():
         "category": category,
         "result": threat_name
     }
-    
+
+    os.remove(filepath)
+
     return jsonify(response), 200
 
 if __name__ == '__main__':
