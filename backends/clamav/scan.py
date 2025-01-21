@@ -17,10 +17,12 @@ def run_clamav(directory):
 
 def parse_output(output, filename):
     """Parses the output to find the threat for the specified file."""
+    if "ERROR" in output:
+        return "Scan engine error"
     match = re.search(r'{}: (.*) FOUND'.format(re.escape(filename)), output)
     if match:
         return match.group(1)
-    return ""
+    return "Undetected"
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -38,11 +40,8 @@ def scan():
 
     output = run_clamav(SCAN_DIR)
     threat_name = parse_output(output, random_filename)
-    
-    category = "malicious" if threat_name else "undetected"
 
     response = {
-        "category": category,
         "result": threat_name
     }
 
