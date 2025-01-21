@@ -32,7 +32,7 @@ def scan():
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
-    random_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+    random_filename = str(uuid.uuid4())
     filepath = os.path.join(SCAN_DIR, random_filename)
     file.save(filepath)
 
