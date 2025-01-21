@@ -8,9 +8,9 @@ app = Flask(__name__)
 SCAN_DIR = '/tmp/share'
 
 def run_clamav(directory):
-    """Runs the clamscan program with specified parameters."""
+    """Runs the clamdscan program with specified parameters."""
     result = subprocess.run(
-        ["clamscan", "-r", directory], 
+        ["clamdscan", directory], 
         capture_output=True, text=True
     )
     return result.stdout
