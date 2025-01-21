@@ -12,9 +12,9 @@ RUN apt-get install -y clamav clamav-daemon python3 python3-pip python3-venv cro
 RUN mkdir -p /var/run/clamav && chown clamav:clamav /var/run/clamav
 RUN python3 -m venv venv
 RUN /bin/bash -c "source venv/bin/activate && pip install flask"
-RUN chmod +x /app/update_freshclam.sh /app/check_clamd.sh
+RUN chmod +x /app/update_av.sh /app/check_av.sh
 RUN echo "0 0 * * * /app/update_av.sh" >> /etc/crontab
 RUN echo "*/5 * * * * /app/check_av.sh" >> /etc/crontab
 
 # Ensure cron is started
-CMD freshclam && ["service", "clamav-daemon", "restart"] && cron && ["venv/bin/python", "/app/scan.py"]
+CMD ["sh", "-c", "freshclam && service clamav-daemon restart && cron && venv/bin/python /app/scan.py"]
